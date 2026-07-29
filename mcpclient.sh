@@ -67,7 +67,7 @@ EOEX
 EOEX
   cat <<'EOEX'
   # AddComment (POST)
-  ./mcpclient.sh call AddComment '{"expand": "expand_value", "issueIdOrKey": "issueIdOrKey_value", "body": {"author": {}, "body": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque eget venenatis elit. Duis eu justo eget augue iaculis fermentum. Sed semper quam laoreet nisi egestas at posuere augue semper.", "created": "2012-07-06T18:30:00.000+0000", "id": "10000", "properties": [], "renderedBody": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque eget venenatis elit. Duis eu justo eget augue iaculis fermentum. Sed semper quam laoreet nisi egestas at posuere augue semper.", "self": "http://www.example.com/jira/rest/api/2/issue/10010/comment/10000", "updateAuthor": "value", "updated": "2012-07-06T18:30:00.000+0000", "visibility": {}}}'
+  ./mcpclient.sh call AddComment '{"expand": "expand_value", "issueIdOrKey": "issueIdOrKey_value", "body": {"author": "value", "body": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque eget venenatis elit. Duis eu justo eget augue iaculis fermentum. Sed semper quam laoreet nisi egestas at posuere augue semper.", "created": "2012-07-06T18:30:00.000+0000", "id": "10000", "properties": [], "renderedBody": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque eget venenatis elit. Duis eu justo eget augue iaculis fermentum. Sed semper quam laoreet nisi egestas at posuere augue semper.", "self": "http://www.example.com/jira/rest/api/2/issue/10010/comment/10000", "updateAuthor": {}, "updated": "2012-07-06T18:30:00.000+0000", "visibility": {}}}'
 EOEX
   cat <<'EOEX'
   # AddField (POST)
@@ -111,7 +111,7 @@ EOEX
 EOEX
   cat <<'EOEX'
   # AddWorklog (POST)
-  ./mcpclient.sh call AddWorklog '{"adjustEstimate": "adjustEstimate_value", "issueIdOrKey": "issueIdOrKey_value", "newEstimate": "newEstimate_value", "reduceBy": "reduceBy_value", "body": {"author": {}, "comment": "I did some work here.", "created": "2010-07-14T18:23:23.733+0000", "id": "100028", "issueId": "10002", "self": "http://www.example.com/jira/rest/api/2/issue/10010/worklog/10000", "started": "2010-07-14T18:23:23.733+0000", "timeSpent": "3h 20m", "timeSpentSeconds": 12000, "updateAuthor": "value", "updated": "2010-07-14T18:23:23.733+0000", "visibility": {}}}'
+  ./mcpclient.sh call AddWorklog '{"adjustEstimate": "adjustEstimate_value", "issueIdOrKey": "issueIdOrKey_value", "newEstimate": "newEstimate_value", "reduceBy": "reduceBy_value", "body": {"author": "value", "comment": "I did some work here.", "created": "2010-07-14T18:23:23.733+0000", "id": "100028", "issueId": "10002", "self": "http://www.example.com/jira/rest/api/2/issue/10010/worklog/10000", "started": "2010-07-14T18:23:23.733+0000", "timeSpent": "3h 20m", "timeSpentSeconds": 12000, "updateAuthor": {}, "updated": "2010-07-14T18:23:23.733+0000", "visibility": {}}}'
 EOEX
   cat <<'EOEX'
   # ApplyEmailTemplates (POST)
