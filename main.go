@@ -135,12 +135,20 @@ func printDefaultConfigYAML() {
 	fmt.Println("# Place this file at: $HOME/." + "jira-mcp" + "/config.yaml")
 	fmt.Println("# Environment variables with MCP__ prefix override these values.")
 	fmt.Println("# e.g. MCP__UPSTREAM__DEFAULT__AUTH__OIDC__CLIENT_ID overrides upstream.default.auth.oidc.client_id")
+	fmt.Println("# Array indices use 0-based notation: MCP__VIRTUAL_TOOLS__0__NAME overrides virtual_tools.0.name")
 	fmt.Println()
 	fmt.Println("# ---- Server (inbound) ----")
 	fmt.Println("# Validates bearer tokens presented by MCP clients (AI agents).")
 	fmt.Println("# Resource Server role per RFC 9728 / MCP Authorization spec.")
 	fmt.Println("# Only enforced on the http transport; stdio has no network boundary.")
 	fmt.Println("server:")
+	fmt.Println("  # The MCP server name is determined by MCP__SERVER__NAME env var,")
+	fmt.Println("  # or defaults to the binary name 'jira-mcp'.")
+	fmt.Println("  # HTTP server timeouts in seconds. 0 = disabled.")
+	fmt.Println("  # write_timeout_seconds must be 0 for SSE (Streamable HTTP) transport.")
+	fmt.Println("  read_timeout_seconds: 30")
+	fmt.Println("  write_timeout_seconds: 0")
+	fmt.Println("  idle_timeout_seconds: 120")
 	fmt.Println("  # Standard OAuth 2.1 / OIDC JWT bearer validation.")
 	fmt.Println("  auth:")
 	fmt.Println("    oidc:")
@@ -154,39 +162,23 @@ func printDefaultConfigYAML() {
 	fmt.Println("      # Additional JWT claims to forward as X-MCP-Client-Token-<Header-Name> headers.")
 	fmt.Println("      # e.g. [\"given_name\", \"family_name\", \"preferred_username\"]")
 	fmt.Println("      # additional_client_token_claim_forward: []")
-	fmt.Println("  # Maximum number of concurrent AI agent client MCP requests.")
-	fmt.Println("  max_parallel_requests: 100")
 	fmt.Println()
-	fmt.Println("# ---- Upstream (outbound) ----")
-	fmt.Println("# Credentials the server uses to call upstream APIs.")
-	fmt.Println("# The two auth layers are independent — the inbound token is never reused outbound")
-	fmt.Println("# (see MCP Authorization spec: Token Passthrough Prohibition).")
-	fmt.Println("upstream:")
-	fmt.Println("  default:")
-	fmt.Println("    endpoint: \"\"               # upstream API base URL (e.g. https://api.example.com)")
-	fmt.Println("    # When true, the MCP session ID is forwarded as X-MCP-Session-ID header.")
-	fmt.Println("    enable_mcp_session_forward: true")
-	fmt.Println("    auth:")
-	fmt.Println("      # OIDC client credentials flow (machine-to-machine)")
-	fmt.Println("      oidc:")
-	fmt.Println("        enabled: false")
-	fmt.Println("        issuer: \"\"            # e.g. https://keycloak.example.com/realms/myrealm")
-	fmt.Println("        client_id: \"\"")
-	fmt.Println("        client_secret: \"\"")
-	fmt.Println("        scopes: \"openid\"       # space-separated scope list")
-	fmt.Println("        token_url: \"\"          # optional override (auto-discovered from issuer if empty)")
+	fmt.Println("  # ---- Internal File System (IFS) Data Plane ----")
+	fmt.Println("  # Built-in REST API for binary file transfer, separate from the")
+	fmt.Println("  # JSON-RPC 2.0 control plane at /mcp.")
+	fmt.Println("  # Upload:   POST /_/ifs/upload/{yyyyMMdd}/{uuid}.{suffix}")
+	fmt.Println("  # Download: GET  /_/ifs/download/{yyyyMMdd}/{uuid}.{suffix}")
+	fmt.Println("  # Files stored under ~/." + "jira-mcp" + "/ifs/{download,upload}/{yyyyMMdd}/")
+	fmt.Println("  # with UUID-based filenames to prevent collisions.")
+	fmt.Println("  ifs:")
+	fmt.Println("    enabled: true")
 	fmt.Println()
-	fmt.Println("      # Static credentials for legacy / simple APIs")
-	fmt.Println("      static:")
-	fmt.Println("        web_token: \"\"           # static web token (Bearer / Basic / raw)")
-	fmt.Println("        web_token_file: \"\"       # path to file containing web token (K8s secrets)")
-	fmt.Println("        cookie_token: \"\"        # static cookie (e.g. JSESSIONID for legacy systems)")
-	fmt.Println("        cookie_token_file: \"\"   # path to file containing cookie token (K8s secrets)")
-	fmt.Println()
-	fmt.Println("# ---- Runtime settings ----")
-	fmt.Println("runtime:")
-	fmt.Println("  download_dir: \"\"             # override download directory for binary responses")
-	fmt.Println("  log_authorization: false     # set true to print Authorization header values in logs")
+	fmt.Println("# ---- Logging ----")
+	fmt.Println("logging:")
+	fmt.Println("  # Controls server-side request/response logging verbosity.")
+	fmt.Println("  # Priority for level: -v CLI flag > MCP__LOGGING__LEVEL ENV > logging.level in config.yaml")
+	fmt.Println("  level: 0                      # 0-10 (0=silent, 1-3=access, 4-7=+headers, 8-9=+values, 10=+body)")
+	fmt.Println("  auth_verbose: false           # set true to print Authorization/Cookie header values in logs")
 	fmt.Println()
 	fmt.Println("# ---- Management Endpoints (metrics, tracing, pprof) ----")
 	fmt.Println("mgmt:")
@@ -210,8 +202,38 @@ func printDefaultConfigYAML() {
 	fmt.Println("      task: [0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10, 30, 60, 120]")
 	fmt.Println("    labels: {}                 # static labels added to every metric")
 	fmt.Println()
+	fmt.Println("# ---- Upstream (outbound) ----")
+	fmt.Println("# Credentials the server uses to call upstream APIs.")
+	fmt.Println("# The two auth layers are independent — the inbound token is never reused outbound")
+	fmt.Println("# (see MCP Authorization spec: Token Passthrough Prohibition).")
+	fmt.Println("upstream:")
+	fmt.Println("  default:")
+	fmt.Println("    endpoint: \"\"               # upstream API base URL (e.g. https://api.example.com)")
+	fmt.Println("    # When true, the MCP session ID is forwarded as X-MCP-Session-ID header.")
+	fmt.Println("    enable_mcp_session_forward: true")
+	fmt.Println("    auth:")
+	fmt.Println("      # OIDC client credentials flow (machine-to-machine)")
+	fmt.Println("      oidc:")
+	fmt.Println("        enabled: false")
+	fmt.Println("        issuer: \"\"            # e.g. https://keycloak.example.com/realms/myrealm")
+	fmt.Println("        client_id: \"\"")
+	fmt.Println("        client_secret: \"\"")
+	fmt.Println("        client_secret_file: \"\" # path to file containing OIDC client secret (K8s secrets)")
+	fmt.Println("        scopes: \"openid\"       # space-separated scope list")
+	fmt.Println("        grant_type: \"\"         # empty = client_credentials; set password for password grant")
+	fmt.Println("        token_url: \"\"          # optional override (auto-discovered from issuer if empty)")
+	fmt.Println("        username: \"\"           # only used when grant_type=password")
+	fmt.Println("        password: \"\"           # only used when grant_type=password")
+	fmt.Println()
+	fmt.Println("      # Static credentials for legacy / simple APIs")
+	fmt.Println("      static:")
+	fmt.Println("        web_token: \"\"           # static web token (Bearer / Basic / raw)")
+	fmt.Println("        web_token_file: \"\"       # path to file containing web token (K8s secrets)")
+	fmt.Println("        cookie_token: \"\"        # static cookie (e.g. JSESSIONID for legacy systems)")
+	fmt.Println("        cookie_token_file: \"\"   # path to file containing cookie token (K8s secrets)")
+	fmt.Println()
 	fmt.Println("# ---- Native MCP Tools ----")
-	fmt.Println("nativeTools:")
+	fmt.Println("native_tools:")
 	fmt.Println("  expose:")
 	fmt.Println("    register_all_tools_by_default: false")
 	fmt.Println("    includes: []")
@@ -227,7 +249,7 @@ func printDefaultConfigYAML() {
 	fmt.Println("#     https://github.com/flowgent-labs/mcpfather/blob/main/.agents/skills/virtual-tool-creator/resources/sonarqube-example-config.yaml")
 	fmt.Println("#   - sonatypeiq-example-config.yaml")
 	fmt.Println("#     https://github.com/flowgent-labs/mcpfather/blob/main/.agents/skills/virtual-tool-creator/resources/sonatypeiq-example-config.yaml")
-	fmt.Println("virtualTools: []")
+	fmt.Println("virtual_tools: []")
 }
 
 func main() {
@@ -249,7 +271,7 @@ func main() {
 		return
 	}
 
-	// Load config from $HOME/.{binaryName}/config.yaml with MCP__ env overrides
+	// Load config from $HOME/.{serviceName}/config.yaml with MCP__ env overrides
 	cfg, err := mcputils.LoadConfig("jira-mcp")
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Warning: config load failed: %v\n", err)
@@ -348,8 +370,22 @@ func main() {
 		}
 		mux.Handle("/mcp", mcpHandler)
 
+		// IFS (Internal File System) data plane: built-in REST endpoints for
+		// binary file upload/download, separate from the JSON-RPC control plane.
+		if cfg.Server.IFS.Enabled {
+			mux.HandleFunc("/_/ifs/download/", mcputils.HandleIFSDownload)
+			mux.HandleFunc("/_/ifs/upload/", mcputils.HandleIFSUpload)
+			fmt.Fprintf(os.Stderr, "IFS data plane enabled: /_/ifs/download/ and /_/ifs/upload/\n")
+		}
+
 		addr := fmt.Sprintf(":%d", *port)
-		httpServer := &http.Server{Addr: addr, Handler: logHTTP(mux)}
+		httpServer := &http.Server{
+			Addr:         addr,
+			Handler:      logHTTP(mux),
+			ReadTimeout:  time.Duration(cfg.Server.ReadTimeoutSeconds) * time.Second,
+			WriteTimeout: time.Duration(cfg.Server.WriteTimeoutSeconds) * time.Second,
+			IdleTimeout:  time.Duration(cfg.Server.IdleTimeoutSeconds) * time.Second,
+		}
 
 		go func() {
 			fmt.Fprintf(os.Stderr, "MCP server listening on %s/mcp\n", addr)

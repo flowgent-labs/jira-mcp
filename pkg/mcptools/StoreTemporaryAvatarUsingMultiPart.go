@@ -34,20 +34,6 @@ func StoreTemporaryAvatarUsingMultiPartHandler(ctx context.Context, request mcp.
 	if args == nil {
 		args = make(map[string]interface{})
 	}
-	fileName := ""
-	if fn, ok := args["file_name"]; ok {
-		if s, ok := fn.(string); ok {
-			fileName = s
-		}
-	}
-	if fileName == "" {
-		return mcp.NewToolResultError("missing required argument: file_name"), nil
-	}
-	fileContentBase64 := ""
-	if fc, ok := args["file_content"]; ok {
-		if s, ok := fc.(string); ok {
-			fileContentBase64 = s
-		}
-	}
-	return mcputils.ForwardUploadRequest(ctx, upstream, "POST", "/rest/api/2/issuetype/{id}/avatar/temporary", fileName, fileContentBase64, "multipart/form-data", "StoreTemporaryAvatarUsingMultiPart")
+	contentType := "multipart/form-data"
+	return mcputils.ForwardAndParseResponse(ctx, upstream, "POST", "/rest/api/2/issuetype/{id}/avatar/temporary", args, []string{"id"}, contentType, "StoreTemporaryAvatarUsingMultiPart")
 }

@@ -31,20 +31,6 @@ func SetColumnsUrlEncodedHandler(ctx context.Context, request mcp.CallToolReques
 	if args == nil {
 		args = make(map[string]interface{})
 	}
-	fileName := ""
-	if fn, ok := args["file_name"]; ok {
-		if s, ok := fn.(string); ok {
-			fileName = s
-		}
-	}
-	if fileName == "" {
-		return mcp.NewToolResultError("missing required argument: file_name"), nil
-	}
-	fileContentBase64 := ""
-	if fc, ok := args["file_content"]; ok {
-		if s, ok := fc.(string); ok {
-			fileContentBase64 = s
-		}
-	}
-	return mcputils.ForwardUploadRequest(ctx, upstream, "PUT", "/rest/api/2/user/columns", fileName, fileContentBase64, "application/x-www-form-urlencoded", "SetColumnsUrlEncoded")
+	contentType := "application/x-www-form-urlencoded"
+	return mcputils.ForwardAndParseResponse(ctx, upstream, "PUT", "/rest/api/2/user/columns", args, []string{}, contentType, "SetColumnsUrlEncoded")
 }
