@@ -79,7 +79,7 @@ EOEX
 EOEX
   cat <<'EOEX'
   # AddComment (POST)
-  ./mcpclient.sh call AddComment '{"expand": "expand_value", "issueIdOrKey": "issueIdOrKey_value", "body": {"author": "value", "body": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque eget venenatis elit. Duis eu justo eget augue iaculis fermentum. Sed semper quam laoreet nisi egestas at posuere augue semper.", "created": "2012-07-06T18:30:00.000+0000", "id": "10000", "properties": [], "renderedBody": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque eget venenatis elit. Duis eu justo eget augue iaculis fermentum. Sed semper quam laoreet nisi egestas at posuere augue semper.", "self": "http://www.example.com/jira/rest/api/2/issue/10010/comment/10000", "updateAuthor": {}, "updated": "2012-07-06T18:30:00.000+0000", "visibility": {}}}'
+  ./mcpclient.sh call AddComment '{"expand": "expand_value", "issueIdOrKey": "issueIdOrKey_value", "body": {"author": {}, "body": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque eget venenatis elit. Duis eu justo eget augue iaculis fermentum. Sed semper quam laoreet nisi egestas at posuere augue semper.", "created": "2012-07-06T18:30:00.000+0000", "id": "10000", "properties": [], "renderedBody": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque eget venenatis elit. Duis eu justo eget augue iaculis fermentum. Sed semper quam laoreet nisi egestas at posuere augue semper.", "self": "http://www.example.com/jira/rest/api/2/issue/10010/comment/10000", "updateAuthor": "value", "updated": "2012-07-06T18:30:00.000+0000", "visibility": {}}}'
 EOEX
   cat <<'EOEX'
   # AddField (POST)
@@ -391,19 +391,6 @@ print(json.dumps(args))
     echo "[!] Tool returned an error:" >&2
     echo "$result" | python3 -m json.tool 2>/dev/null || echo "$result"
     return 1
-  fi
-
-  # Check if result indicates a saved file (download tools return "Saved to: <path>")
-  if echo "$result" | grep -q '"Saved to:'; then
-    local saved_path
-    saved_path=$(echo "$result" | grep -o 'Saved to: [^"]*' | sed 's/Saved to: //')
-    if [ -n "$saved_path" ] && [ -f "$saved_path" ]; then
-      local fsize
-      fsize=$(wc -c < "$saved_path" | tr -d ' ')
-      echo "[+] Downloaded: $saved_path ($fsize bytes)"
-      echo "$result" | python3 -m json.tool 2>/dev/null || echo "$result"
-      return 0
-    fi
   fi
 
   # Pretty print JSON response
