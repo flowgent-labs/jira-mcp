@@ -31,6 +31,6 @@ func SetRefinedVelocityHandler(ctx context.Context, request mcp.CallToolRequest)
 	if args == nil {
 		args = make(map[string]interface{})
 	}
-	contentType := "application/json"
+	contentType := "application/x-www-form-urlencoded"
 	return mcputils.ForwardAndParseResponse(ctx, upstream, "PUT", "/rest/agile/1.0/board/{boardId}/settings/refined-velocity", args, []string{"boardId"}, contentType, "SetRefinedVelocity")
 }
