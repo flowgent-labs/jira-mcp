@@ -111,7 +111,7 @@ spec:
             {{- end }}
             {{- if .Values.persistence.enabled }}
             - name: data
-              mountPath: /home/mcp/.jira-mcp/ifs
+              mountPath: /home/mcp/.jira-mcp/tfs
             {{- end }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
