@@ -20,7 +20,7 @@ const GetErrorResponseTemplate_A = "# API Response Information\n\nBelow is the r
 func NewGetErrorMCPTool() mcp.Tool {
 	return mcp.NewToolWithRawSchema(
 		"GetError",
-		"",
+		"Invoke getError",
 		[]byte(GetErrorInputSchema),
 	)
 }
